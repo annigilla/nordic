@@ -258,8 +258,8 @@ function renderBudget() {
     tBody.innerHTML = "";
     if (cloudData.trans) cloudData.trans.forEach(i => addTransRow(i.n, i.a, i.c, i.u));
     else {
-        addTransRow("國際機票 (阿聯酋)", 42142, 33714, "TWD");
-        addTransRow("內陸航段 (2段)", 11627, 9226, "TWD");
+        addTransRow("國際機票 (Emirates)", 42142, 33714, "TWD");
+        addTransRow("歐陸航段 (2段)", 11627, 9226, "TWD");
     }
 
     const sBody = document.getElementById('stay-body');
@@ -267,7 +267,9 @@ function renderBudget() {
     if (cloudData.stay) cloudData.stay.forEach(i => addStayRow(i.n, i.v, i.u));
     else {
         addStayRow("Santa Claus Village", 7485, "EUR");
-        addStayRow("Airbnb 合計", 1500, "EUR");
+        addStayRow("Helsinki Airbnb", 53656, "TWD");
+         addStayRow("Copenhagen Airbnb", 63085, "TWD");
+         addStayRow("Stockholm Airbnb", 45757, "TWD");
     }
     calculateBudget();
 }
@@ -410,3 +412,4 @@ loadFromCloud();
 </script>
 </body>
 </html>
+
