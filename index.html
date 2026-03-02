@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2027 北歐親子極光之旅 </title>
+    <title>2027 北歐親子之旅</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -20,35 +20,33 @@
         .container { max-width: 950px; margin: 20px auto; padding: 0 15px; display: none; }
         .container.active { display: block; }
 
-        /* 行程卡片 */
+        /* 卡片樣式 */
         .card { background: white; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; }
         .card-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; background: #fff; border-bottom: 1px solid #eee; }
         .card-header.active { background: var(--accent); color: white; }
         .card-content { display: none; padding: 20px; background: #fff; }
-        .section-title { font-weight: bold; color: var(--accent); margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; }
-        
-        /* 編輯區與固定區 */
         .editable-feature { background: #fffcf0; padding: 10px; border-radius: 5px; border: 1px dashed #f1c40f; outline: none; line-height: 1.6; }
-        .fixed-info { background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 0.9em; color: #555; white-space: pre-line; }
+        .fixed-info { background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 0.9em; color: #555; white-space: pre-line; margin-bottom: 10px;}
 
-        /* 表格樣式 */
+        /* 表格與記帳 */
         table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 10px; font-size: 0.85em; }
         th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f8f9fa; }
         input, select { padding: 5px; border: 1px solid #ddd; border-radius: 4px; width: 90%; background: #fffcf0; }
+        
+        /* 結清樣式 */
+        .settled-row { background-color: #f1f2f6 !important; opacity: 0.7; }
+        .settled-row input, .settled-row select { background-color: #e1e2e6; }
+        .settled-label { font-size: 0.7em; color: #27ae60; font-weight: bold; display: block; text-align: center;}
 
         /* 總額顯示 */
         .summary-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .summary-card { flex: 1; background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .summary-card { flex: 1; background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-top: 4px solid #ccc;}
 
-        /* 記帳卡片 */
-        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .balance-card { background: white; padding: 15px; border-radius: 10px; text-align: center; border-top: 4px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
-        /* 按鈕 */
         .btn-save { background: #2ecc71; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.1em; cursor: pointer; position: fixed; bottom: 20px; right: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; font-weight: bold; }
         .btn-add { background: var(--money); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 10px; }
-        .btn-del { background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .btn-del-tiny { background: none; color: #ccc; border: none; cursor: pointer; font-size: 12px; }
+        .btn-del-tiny:hover { color: var(--danger); }
 
         @media (max-width: 600px) { th, td { padding: 6px 4px; font-size: 0.75em; } }
     </style>
@@ -56,7 +54,7 @@
 <body>
 
 <header>
-    <h1>❄️ 北歐 2027 親子之旅動態管家</h1>
+    <h1>❄️ 北歐親子極光之旅</h1>
     <p id="status-msg">芬蘭．丹麥．挪威．瑞典．塔林</p>
 </header>
 
@@ -68,6 +66,7 @@
 
 <!-- 分頁 1: 行程 -->
 <div id="itinerary" class="container active">
+    <p style="font-size: 0.8em; color: #888;">* 只有黃色區塊可以編輯行程特色，其餘為固定資訊。</p>
     <div id="itinerary-list"></div>
 </div>
 
@@ -77,19 +76,19 @@
         歐元匯率：<input type="number" id="eur-rate" value="35.5" step="0.1" style="width:80px; text-align:center;" oninput="calculateBudget()">
     </div>
     <div class="summary-box">
-        <div class="summary-card" style="border-bottom: 5px solid var(--money);">大人均價: <br><b id="total-adult" style="font-size:1.4em;">0</b></div>
-        <div class="summary-card" style="border-bottom: 5px solid var(--child);">小孩均價: <br><b id="total-child" style="font-size:1.4em;">0</b></div>
+        <div class="summary-card" style="border-top-color: var(--money);">大人均價 (TWD): <br><b id="total-adult" style="font-size:1.4em; color:var(--money)">0</b></div>
+        <div class="summary-card" style="border-top-color: var(--child);">小孩均價 (TWD): <br><b id="total-child" style="font-size:1.4em; color:var(--child)">0</b></div>
     </div>
-    <h3>✈️ 交通與雜費 (大人/小孩分開)</h3>
-    <table>
+    <h3>✈️ 交通與雜費 (6大3小計算)</h3>
+    <table id="trans-table">
         <thead><tr><th>項目</th><th>大人價</th><th>小孩價</th><th>幣別</th><th></th></tr></thead>
         <tbody id="trans-body"></tbody>
     </table>
     <button class="btn-add" onclick="addTransRow()">＋ 新增項目</button>
 
     <h3>🏠 住宿費用 (全團 9 人平攤)</h3>
-    <table>
-        <thead><tr><th>地點</th><th>總金額</th><th>幣別</th><th>人均 (TWD)</th><th></th></tr></thead>
+    <table id="stay-table">
+        <thead><tr><th>住宿地點</th><th>總金額</th><th>幣別</th><th>人均 (TWD)</th><th></th></tr></thead>
         <tbody id="stay-body"></tbody>
     </table>
     <button class="btn-add" onclick="addStayRow()">＋ 新增住宿</button>
@@ -97,14 +96,24 @@
 
 <!-- 分頁 3: 記帳 -->
 <div id="ledger" class="container">
-    <div id="balance-summary" class="balance-grid"></div>
+    <h3>📊 目前待結餘額 (不含已結清)</h3>
+    <div id="balance-summary" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:20px;"></div>
+    
+    <h3>📝 消費紀錄</h3>
     <table id="ledger-table">
         <thead>
-            <tr><th width="20%">項目</th><th width="15%">金額</th><th width="15%">付款</th><th width="40%">參與</th><th width="10%"></th></tr>
+            <tr>
+                <th width="20%">項目</th>
+                <th width="12%">金額</th>
+                <th width="12%">付款人</th>
+                <th width="35%">參與人</th>
+                <th width="12%">狀態</th>
+                <th width="5%"></th>
+            </tr>
         </thead>
         <tbody id="ledger-body"></tbody>
     </table>
-    <button class="btn-add" onclick="addLedgerRow()">＋ 新增消費</button>
+    <button class="btn-add" onclick="addLedgerRow()">＋ 新增一筆代墊</button>
 </div>
 
 <button class="btn-save" onclick="saveToCloud()">💾 儲存所有變更</button>
@@ -125,7 +134,6 @@ const db = firebase.database();
 
 const members = ["Vic", "David", "Anni", "Anna", "Joyce", "Anna II"];
 
-// --- 2. 初始行程資料 (固定部分) ---
 const staticItinerary = [
     { d: "第 01 天 | 01/29 (五)", 
       t: "台北 準備出發", 
@@ -209,25 +217,24 @@ const staticItinerary = [
       h: "台北" }
 ];
 
-// --- 3. 雲端讀取 ---
 let cloudData = { eurRate: 35.5, features: {}, trans: [], stay: [], ledger: [] };
 
 function loadFromCloud() {
-    db.ref("trip_v4").once("value").then((snapshot) => {
+    db.ref("trip_final").once("value").then((snapshot) => {
         if (snapshot.exists()) cloudData = snapshot.val();
         renderItinerary();
         renderBudget();
         renderLedger();
-        document.getElementById('status-msg').innerText = "✅ 雲端同步中";
+        document.getElementById('status-msg').innerText = "芬蘭．丹麥．挪威．瑞典．塔林";
     });
 }
 
-// --- 4. 渲染功能 ---
+// 渲染行程 (僅特色可編輯)
 function renderItinerary() {
     const list = document.getElementById('itinerary-list');
     list.innerHTML = "";
     staticItinerary.forEach((item, idx) => {
-        const feat = cloudData.features ? cloudData.features['day'+idx] : item.f;
+        const feat = (cloudData.features && cloudData.features['day'+idx]) ? cloudData.features['day'+idx] : item.f;
         list.innerHTML += `
             <div class="card">
                 <div class="card-header" onclick="toggleCard(this)">
@@ -235,7 +242,7 @@ function renderItinerary() {
                 </div>
                 <div class="card-content">
                     <div class="section-title">📜 行程特色 </div>
-                    <div class="editable-feature" contenteditable="true" id="feat-${idx}">${feat || item.f}</div>
+                    <div class="editable-feature" contenteditable="true" id="feat-${idx}">${feat}</div>
                     <div class="section-title">✈️ 交通銜接 </div>
                     <div class="fixed-info">${item.tr}</div>
                     <div class="section-title">🏨 住宿預定 </div>
@@ -251,7 +258,7 @@ function renderBudget() {
     tBody.innerHTML = "";
     if (cloudData.trans) cloudData.trans.forEach(i => addTransRow(i.n, i.a, i.c, i.u));
     else {
-        addTransRow("國際機票 (Emirates)", 42142, 33714, "TWD");
+        addTransRow("國際機票 (阿聯酋)", 42142, 33714, "TWD");
         addTransRow("內陸航段 (2段)", 11627, 9226, "TWD");
     }
 
@@ -260,9 +267,7 @@ function renderBudget() {
     if (cloudData.stay) cloudData.stay.forEach(i => addStayRow(i.n, i.v, i.u));
     else {
         addStayRow("Santa Claus Village", 7485, "EUR");
-        addStayRow("Helsinki Airbnb 合計", 1500, "TWD");
-        addStayRow("Copenhagen Airbnb 合計", 1500, "TWD");
-        addStayRow("Stockholm Airbnb 合計", 1500, "TWD");
+        addStayRow("Airbnb 合計", 1500, "EUR");
     }
     calculateBudget();
 }
@@ -274,7 +279,7 @@ function addTransRow(n="", a=0, c=0, u="TWD") {
         <td><input type="number" class="t-adult" value="${a}" oninput="calculateBudget()"></td>
         <td><input type="number" class="t-child" value="${c}" oninput="calculateBudget()"></td>
         <td><select class="t-unit" onchange="calculateBudget()"><option value="TWD" ${u==='TWD'?'selected':''}>TWD</option><option value="EUR" ${u==='EUR'?'selected':''}>EUR</option></select></td>
-        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculateBudget()">X</button></td>`;
+        <td><button class="btn-del-tiny" onclick="this.parentElement.parentElement.remove();calculateBudget()">刪除</button></td>`;
     document.getElementById('trans-body').appendChild(row);
 }
 
@@ -285,14 +290,13 @@ function addStayRow(n="", v=0, u="EUR") {
         <td><input type="number" class="s-cost" value="${v}" oninput="calculateBudget()"></td>
         <td><select class="s-unit" onchange="calculateBudget()"><option value="EUR" ${u==='EUR'?'selected':''}>EUR</option><option value="TWD" ${u==='TWD'?'selected':''}>TWD</option></select></td>
         <td class="s-twd">0</td>
-        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculateBudget()">X</button></td>`;
+        <td><button class="btn-del-tiny" onclick="this.parentElement.parentElement.remove();calculateBudget()">刪除</button></td>`;
     document.getElementById('stay-body').appendChild(row);
 }
 
 function calculateBudget() {
     const rate = parseFloat(document.getElementById('eur-rate').value) || 0;
     let totalA = 0, totalC = 0;
-
     document.querySelectorAll('#trans-body tr').forEach(row => {
         const a = parseFloat(row.querySelector('.t-adult').value) || 0;
         const c = parseFloat(row.querySelector('.t-child').value) || 0;
@@ -300,7 +304,6 @@ function calculateBudget() {
         totalA += (u === "EUR") ? a * rate : a;
         totalC += (u === "EUR") ? c * rate : c;
     });
-
     document.querySelectorAll('#stay-body tr').forEach(row => {
         const cost = parseFloat(row.querySelector('.s-cost').value) || 0;
         const u = row.querySelector('.s-unit').value;
@@ -308,39 +311,60 @@ function calculateBudget() {
         totalA += twdPer; totalC += twdPer;
         row.querySelector('.s-twd').innerText = Math.round(twdPer).toLocaleString();
     });
-
     document.getElementById('total-adult').innerText = "NT$ " + Math.round(totalA).toLocaleString();
     document.getElementById('total-child').innerText = "NT$ " + Math.round(totalC).toLocaleString();
 }
 
+// 記帳渲染
 function renderLedger() {
     const lBody = document.getElementById('ledger-body');
     lBody.innerHTML = "";
-    if (cloudData.ledger) cloudData.ledger.forEach(i => addLedgerRow(i.item, i.amount, i.payer, i.participants));
+    if (cloudData.ledger) cloudData.ledger.forEach(i => addLedgerRow(i.item, i.amount, i.payer, i.participants, i.settled));
     calculateLedger();
 }
 
-function addLedgerRow(item="", amount=0, payer="Vic", participants=members) {
+function addLedgerRow(item="", amount=0, payer="Vic", participants=members, settled=false) {
     const row = document.createElement('tr');
-    let checks = members.map(m => `<label style="margin-right:5px; display:inline-block;"><input type="checkbox" class="p-check" value="${m}" ${participants.includes(m)?'checked':''}>${m}</label>`).join("");
+    if (settled) row.classList.add('settled-row');
+
+    let checks = members.map(m => `<label style="margin-right:5px;"><input type="checkbox" class="p-check" value="${m}" ${participants.includes(m)?'checked':''}>${m}</label>`).join("");
     row.innerHTML = `
         <td><input class="l-item" value="${item}"></td>
         <td><input type="number" class="l-amt" value="${amount}" oninput="calculateLedger()"></td>
         <td><select class="l-payer" onchange="calculateLedger()">${members.map(m => `<option value="${m}" ${payer===m?'selected':''}>${m}</option>`).join("")}</select></td>
         <td><div onchange="calculateLedger()">${checks}</div></td>
-        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculateLedger()">X</button></td>`;
-    lBody = document.getElementById('ledger-body').appendChild(row);
+        <td style="text-align:center;">
+            <input type="checkbox" class="l-settled" ${settled?'checked':''} onchange="toggleSettled(this)">
+            <span class="settled-label">${settled?'已結清':''}</span>
+        </td>
+        <td><button class="btn-del-tiny" onclick="this.parentElement.parentElement.remove();calculateLedger()">刪除</button></td>`;
+    document.getElementById('ledger-body').appendChild(row);
+}
+
+function toggleSettled(el) {
+    const row = el.parentElement.parentElement;
+    if (el.checked) {
+        row.classList.add('settled-row');
+        el.nextElementSibling.innerText = "已結清";
+    } else {
+        row.classList.remove('settled-row');
+        el.nextElementSibling.innerText = "";
+    }
+    calculateLedger();
 }
 
 function calculateLedger() {
     let bal = {}; members.forEach(m => bal[m] = 0);
     document.querySelectorAll('#ledger-body tr').forEach(row => {
-        const amt = parseFloat(row.querySelector('.l-amt').value) || 0;
-        const payer = row.querySelector('.l-payer').value;
-        const participants = Array.from(row.querySelectorAll('.p-check:checked')).map(cb => cb.value);
-        if (amt > 0 && participants.length > 0) {
-            bal[payer] += amt;
-            participants.forEach(p => bal[p] -= amt / participants.length);
+        const isSettled = row.querySelector('.l-settled').checked;
+        if (!isSettled) {
+            const amt = parseFloat(row.querySelector('.l-amt').value) || 0;
+            const payer = row.querySelector('.l-payer').value;
+            const participants = Array.from(row.querySelectorAll('.p-check:checked')).map(cb => cb.value);
+            if (amt > 0 && participants.length > 0) {
+                bal[payer] += amt;
+                participants.forEach(p => bal[p] -= amt / participants.length);
+            }
         }
     });
     document.getElementById('balance-summary').innerHTML = members.map(m => {
@@ -349,29 +373,26 @@ function calculateLedger() {
     }).join("");
 }
 
-// --- 5. 雲端儲存 ---
 function saveToCloud() {
-    const pwd = prompt("輸入管理密碼：");
+    const pwd = prompt("管理密碼：");
     if (pwd !== "2027") return;
-
     const data = {
         eurRate: parseFloat(document.getElementById('eur-rate').value),
         features: {},
         trans: Array.from(document.querySelectorAll('#trans-body tr')).map(r => ({
-            n: r.querySelector('.t-name').value, a: parseFloat(r.querySelector('.t-adult').value),
-            c: parseFloat(r.querySelector('.t-child').value), u: r.querySelector('.t-unit').value
+            n: r.querySelector('.t-name').value, a: parseFloat(r.querySelector('.t-adult').value), c: parseFloat(r.querySelector('.t-child').value), u: r.querySelector('.t-unit').value
         })),
         stay: Array.from(document.querySelectorAll('#stay-body tr')).map(r => ({
             n: r.querySelector('.s-name').value, v: parseFloat(r.querySelector('.s-cost').value), u: r.querySelector('.s-unit').value
         })),
         ledger: Array.from(document.querySelectorAll('#ledger-body tr')).map(r => ({
             item: r.querySelector('.l-item').value, amount: parseFloat(r.querySelector('.l-amt').value),
-            payer: r.querySelector('.l-payer').value, participants: Array.from(r.querySelectorAll('.p-check:checked')).map(cb => cb.value)
+            payer: r.querySelector('.l-payer').value, participants: Array.from(r.querySelectorAll('.p-check:checked')).map(cb => cb.value),
+            settled: r.querySelector('.l-settled').checked
         }))
     };
     staticItinerary.forEach((_, i) => { data.features['day'+i] = document.getElementById('feat-'+i).innerText; });
-
-    db.ref("trip_v4").set(data).then(() => alert("✅ 儲存成功！"));
+    db.ref("trip_final_v5").set(data).then(() => alert("✅ 儲存成功！"));
 }
 
 function showTab(id) {
@@ -380,17 +401,12 @@ function showTab(id) {
     document.getElementById(id).classList.add('active');
     event.currentTarget.classList.add('active');
 }
-
 function toggleCard(el) {
     el.classList.toggle('active');
     const content = el.nextElementSibling;
     content.style.display = (content.style.display === 'block') ? 'none' : 'block';
 }
-
 loadFromCloud();
 </script>
 </body>
 </html>
-
-
-
