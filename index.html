@@ -3,62 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2027 北歐親子之旅 </title>
+    <title>2027 北歐親子極光之旅 </title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6;
-            --money: #27ae60; --child: #e67e22; --danger: #ff4757;
-        }
-
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; color: #333; line-height: 1.6; }
-        header { background: linear-gradient(135deg, #1a2a6c, #b21f1f); color: white; text-align: center; padding: 30px 10px; }
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; --money: #27ae60; --child: #e67e22; --danger: #ff4757; }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; color: #333; }
+        header { background: linear-gradient(135deg, #1a2a6c, #b21f1f); color: white; text-align: center; padding: 20px 10px; }
         
+        /* 導覽分頁 */
         .nav-tabs { display: flex; background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; font-size: 1.1em; font-weight: bold; cursor: pointer; color: #777; border-bottom: 3px solid transparent; }
+        .tab-btn { flex: 1; padding: 15px 5px; border: none; background: none; font-size: 1em; font-weight: bold; cursor: pointer; color: #777; border-bottom: 3px solid transparent; }
         .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
 
-        .container { max-width: 900px; margin: 20px auto; padding: 0 15px; display: none; }
+        .container { max-width: 950px; margin: 20px auto; padding: 0 15px; display: none; }
         .container.active { display: block; }
 
-        /* 試算設定 */
-        .config-box { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 2px solid var(--accent); text-align: center; }
-        .config-box input { width: 80px; padding: 8px; font-size: 1.1em; border: 1px solid #ddd; border-radius: 5px; text-align: center; color: var(--money); font-weight: bold; }
-
-        .total-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .total-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .total-card .amount { font-size: 1.6em; font-weight: bold; display: block; margin-top: 5px; }
+        /* 行程卡片 */
+        .card { background: white; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; }
+        .card-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; background: #fff; border-bottom: 1px solid #eee; }
+        .card-header.active { background: var(--accent); color: white; }
+        .card-content { display: none; padding: 20px; background: #fff; }
+        .section-title { font-weight: bold; color: var(--accent); margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; }
+        
+        /* 編輯區與固定區 */
+        .editable-feature { background: #fffcf0; padding: 10px; border-radius: 5px; border: 1px dashed #f1c40f; outline: none; line-height: 1.6; }
+        .fixed-info { background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 0.9em; color: #555; white-space: pre-line; }
 
         /* 表格樣式 */
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; margin-bottom: 10px; font-size: 0.9em; }
-        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; color: var(--primary); }
-        .editable-input { width: 95%; padding: 6px; border: 1px solid #eee; border-radius: 4px; background: #fffcf0; font-size: 1em; }
-        .btn-add { background: var(--money); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px 0 30px 0; font-weight: bold; }
-        .btn-del { background: var(--danger); color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 10px; font-size: 0.85em; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; }
+        input, select { padding: 5px; border: 1px solid #ddd; border-radius: 4px; width: 90%; background: #fffcf0; }
 
-        /* 行程卡片 */
-        .card { background: white; margin-bottom: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; }
-        .card-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; align-items: center; }
-        .card-header.active { background: var(--accent); color: white; }
-        .card-content { display: none; padding: 20px; border-top: 1px solid #eee; background: #fff; }
-        .section-title { font-weight: bold; color: var(--accent); margin-top: 12px; border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 5px; }
-        .active .section-title { color: var(--primary); border-left-color: var(--primary); }
-        .info-box { background: #f1f3f5; padding: 10px; border-radius: 8px; font-size: 0.9em; margin: 10px 0; border: 1px dashed #ccc; white-space: pre-line; color: #444; }
+        /* 總額顯示 */
+        .summary-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .summary-card { flex: 1; background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        footer { text-align: center; padding: 40px; color: #aaa; font-size: 0.85em; }
-        @media (max-width: 600px) { .total-summary { grid-template-columns: 1fr; } }
+        /* 記帳卡片 */
+        .balance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .balance-card { background: white; padding: 15px; border-radius: 10px; text-align: center; border-top: 4px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* 按鈕 */
+        .btn-save { background: #2ecc71; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.1em; cursor: pointer; position: fixed; bottom: 20px; right: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; font-weight: bold; }
+        .btn-add { background: var(--money); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 10px; }
+        .btn-del { background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+        @media (max-width: 600px) { th, td { padding: 6px 4px; font-size: 0.75em; } }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>❄️ 2027 北歐親子之旅</h1>
-    <p>芬蘭．丹麥．挪威．瑞典．塔林 </p>
+    <h1>❄️ 北歐 2027 親子之旅動態管家</h1>
+    <p id="status-msg">📡 正在連接雲端...</p>
 </header>
 
 <div class="nav-tabs">
     <button class="tab-btn active" onclick="showTab('itinerary')">📅 詳細行程</button>
     <button class="tab-btn" onclick="showTab('budget')">💰 預算試算</button>
+    <button class="tab-btn" onclick="showTab('ledger')">💵 記帳分帳</button>
 </div>
 
 <!-- 分頁 1: 行程 -->
@@ -68,256 +73,305 @@
 
 <!-- 分頁 2: 預算 -->
 <div id="budget" class="container">
-    <div class="config-box">
-        <label>💱 歐元匯率試算：</label>
-        <input type="number" id="eur-rate" value="35.5" step="0.1" oninput="calculate()">
+    <div class="card" style="padding:15px; text-align:center; border: 2px solid var(--accent);">
+        歐元匯率：<input type="number" id="eur-rate" value="35.5" step="0.1" style="width:80px; text-align:center;" oninput="calculateBudget()">
     </div>
-
-    <div class="total-summary">
-        <div class="total-card adult" style="border-bottom:5px solid var(--money)">
-            <span style="font-size:0.9em; color:#666">大人總額 (TWD)</span>
-            <span class="amount" id="total-adult">0</span>
-        </div>
-        <div class="total-card child" style="border-bottom:5px solid var(--child)">
-            <span style="font-size:0.9em; color:#666">小孩總額 (TWD)</span>
-            <span class="amount" id="total-child">0</span>
-        </div>
+    <div class="summary-box">
+        <div class="summary-card" style="border-bottom: 5px solid var(--money);">大人均價: <br><b id="total-adult" style="font-size:1.4em;">0</b></div>
+        <div class="summary-card" style="border-bottom: 5px solid var(--child);">小孩均價: <br><b id="total-child" style="font-size:1.4em;">0</b></div>
     </div>
-
-    <h3>✈️ 交通費用</h3>
-    <table id="trans-table">
-        <thead><tr><th>項目</th><th>大人</th><th>小孩</th><th>幣別</th><th></th></tr></thead>
+    <h3>✈️ 交通與雜費 (大人/小孩分開)</h3>
+    <table>
+        <thead><tr><th>項目</th><th>大人價</th><th>小孩價</th><th>幣別</th><th></th></tr></thead>
         <tbody id="trans-body"></tbody>
     </table>
-    <button class="btn-add" onclick="addRow('trans-body')">＋ 新增交通品項</button>
+    <button class="btn-add" onclick="addTransRow()">＋ 新增項目</button>
 
     <h3>🏠 住宿費用 (全團 9 人平攤)</h3>
-    <table id="stay-table">
-        <thead><tr><th>住宿地點</th><th>總金額</th><th>幣別</th><th>人均 (TWD)</th><th></th></tr></thead>
+    <table>
+        <thead><tr><th>地點</th><th>總金額</th><th>幣別</th><th>人均 (TWD)</th><th></th></tr></thead>
         <tbody id="stay-body"></tbody>
     </table>
-    <button class="btn-add" onclick="addRow('stay-body')">＋ 新增住宿地點</button>
+    <button class="btn-add" onclick="addStayRow()">＋ 新增住宿</button>
 </div>
 
-<footer>© 2027 Nordic Trip Planner</footer>
+<!-- 分頁 3: 記帳 -->
+<div id="ledger" class="container">
+    <div id="balance-summary" class="balance-grid"></div>
+    <table id="ledger-table">
+        <thead>
+            <tr><th width="20%">項目</th><th width="15%">金額</th><th width="15%">付款</th><th width="40%">參與</th><th width="10%"></th></tr>
+        </thead>
+        <tbody id="ledger-body"></tbody>
+    </table>
+    <button class="btn-add" onclick="addLedgerRow()">＋ 新增消費</button>
+</div>
+
+<button class="btn-save" onclick="saveToCloud()">💾 儲存所有變更</button>
 
 <script>
-/**
- * ==========================================
- * 📝 行程編輯區 (易讀結構)
- * ==========================================
- */
-const itineraryData = [
-    {
-        day: "第 01 天 | 01/29 (五)",
-        title: "台北 ✈️ 準備出發",
-        feature: "21:00 桃園國際機場集合，飛往杜拜轉機。帶著期待的心情開啟北歐之旅！",
-        transport: "",
-        hotel: "機上休息"
-    },
-    {
-        day: "第 02 天 | 01/30 (六)",
-        title: "台北 ✈️ 杜拜 ✈️ 赫爾辛基 ",
-        feature: "抵達後進行輕鬆的市區漫步。推薦：Oodi 圖書館（兒童閱讀區）、Esplanadi 公園散步買名牌，調整時差。",
-        transport: "阿聯酋航空 EK367 台北 00:20 - 杜拜 06:15\n阿聯酋航空 EK167 杜拜 08:40 - 赫爾辛基 14:05",
-        hotel: "赫爾辛基 (Helsinki) Airbnb"
-    },
-    {
-        day: "第 03 天 | 01/31 (日)",
-        title: "赫爾辛基【市區觀光】",
-        feature: "參觀宏偉的主教座堂、富有俄羅斯風情的烏斯佩斯基大教堂，以及奇特的岩石教堂。",
-        transport: "",
-        hotel: "赫爾辛基 (Helsinki) Airbnb"
-    },
-    {
-        day: "第 04 天 | 02/01 (一)",
-        title: "赫爾辛基 🚢 塔林 (愛沙尼亞) 一日遊",
-        feature: "搭乘渡輪前往愛沙尼亞首都。漫步於世界文化遺產——塔林舊城區，體驗中世紀童話氛圍。",
-        transport: "去程 赫爾辛基 10:30 - 塔林     12:30\n返程 塔林     16:30 - 赫爾辛基 18:30",
-        hotel: "赫爾辛基 (Helsinki) Airbnb"
-    },
-    {
-        day: "第 05 天 | 02/02 (二)",
-        title: "赫爾辛基 🚂 (夜鋪火車) 往羅瓦涅米",
-        feature: "白天市區自由活動。晚間搭乘「極光特快車」夜鋪火車，讓小朋友體驗睡在火車上的樂趣！",
-        transport: "VR 極地夜鋪火車 赫爾辛基 19:29 - 羅瓦涅米 7:20(+1)",
-        hotel: "舒適夜鋪火車 (兩人一室套房)"
-    },
-    {
-        day: "第 06 天 | 02/03 (三)",
-        title: "羅瓦涅米【聖誕老人與極光】",
-        feature: "早晨抵達北極圈內的羅瓦涅米。剛結束夜鋪火車旅程，第一天建議先在市區走走逛逛，安排輕量的活動以保留體力，讓大人小孩都能慢慢適應極地的氣候與環境。晚間留意極光預報。",
-        transport: "07:20 抵達羅瓦涅米",
-        hotel: "Santa Claus Holiday Village"
-    },
-    {
-        day: "第 07 天 | 02/04 (四)",
-        title: "羅瓦涅米【聖誕老人與極光】",
-        feature: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。",
-        transport: "",
-        hotel: "Santa Claus Holiday Village"
-    },
-    {
-        day: "第 08 天 | 02/05 (五)",
-        title: "羅瓦涅米【聖誕老人與極光】",
-        feature: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。",
-        transport: "",
-        hotel: "Santa Claus Holiday Village"
-    },
-    {
-        day: "第 09 天 | 02/06 (六)",
-        title: "羅瓦涅米【聖誕老人與極光】",
-        feature: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。",
-        transport: "",
-        hotel: "Santa Claus Holiday Village"
-    },
-    {
-        day: "第 10 天 | 02/07 (日)",
-        title: "羅瓦涅米【聖誕老人與極光】",
-        feature: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。",
-        transport: "",
-        hotel: "Santa Claus Holiday Village"
-    },
-    {
-        day: "第 11 天 | 02/08 (一)",
-        title: "哥本哈根【童話觀光】",
-        feature: "飛往丹麥。尋找小美人魚、繽紛新港 (Nyhavn) 拍照。參觀圓塔與 Tivoli 樂園。",
-        transport: "芬蘭航空 AY532 羅瓦涅米 09:10 -  赫爾辛基 10:25)\n芬蘭航空 AY957 赫爾辛基 11:35 -  哥本哈根 12:15)",
-        hotel: "哥本哈根 (Copenhagen) Airbnb"
-    },
-    {
-        day: "第 12 天 | 02/09 (二)",
-        title: "哥本哈根【童話觀光】",
-        feature: "尋找小美人魚、繽紛新港 (Nyhavn) 拍照。參觀圓塔與 Tivoli 樂園。",
-        transport: "",
-        hotel: "哥本哈根 (Copenhagen) Airbnb"
-    },
-    {
-        day: "第 13 天 | 02/10 (三)",
-        title: "哥本哈根 🚢 (過夜郵輪) 往奧斯陸",
-        feature: "傍晚登上豪華郵輪 DFDS。船上享用大餐、欣賞海景，移動中享受舒適睡眠。",
-        transport: "DFDS 豪華郵輪 哥本哈根 16:15 - 奧斯陸 10:00(+1)",
-        hotel: "郵輪艙房"
-    },
-    {
-        day: "第 14 天 | 02/11 (四)",
-        title: "奧斯陸 ✈️ 斯德哥爾摩",
-        feature: "10:00抵達奧斯陸，市區漫步。隨後飛往斯德哥爾摩。",
-        transport: "挪威航空 DY816 奧斯陸 15:00 - 斯德哥爾摩 16:00",
-        hotel: "斯德哥爾摩 (Stockholm) Airbnb"
-    },
-    {
-        day: "第 15 天 | 02/12 (五)",
-        title: "斯德哥爾摩【老城維京觀光】",
-        feature: "斯德哥爾摩有非常多適合親子的景點！大力推薦參觀 Vasa 沉船博物館，讓孩子親眼目睹巨大的真實古代沉船；接著前往 Skansen 戶外博物館 觀賞可愛的北歐在地動物。隨後可順遊充滿古意的 老城區 (Gamla Stan)、斯德哥爾摩皇宮與諾貝爾博物館。",
-        transport: "",
-        hotel: "斯德哥爾摩 (Stockholm) Airbnb"
-    },
-    {
-        day: "第 16-17 天 | 02/13 (六) - 02/14 (日)",
-        title: "歸途 (瑞典 ✈️ 杜拜 ✈️ 台北)",
-        feature: "經杜拜轉機返回台北。帶著滿滿的回憶與極光照片回到溫暖的家。",
-        transport: "阿聯酋航空 EK158 斯德哥爾摩 14:30 - 杜拜 00:05(+1)\n阿聯酋航空 EK366 杜拜 03:40 - 台北 15:35",
-        hotel: "Sweet Home"
-    }
+// --- 1. Firebase 配置 ---
+const firebaseConfig = {
+  apiKey: "AIzaSyA0S2Kb52L2hLXbMirSDTEG4FKlOLktuz4",
+  authDomain: "nordictrip-b0e0b.firebaseapp.com",
+  databaseURL: "https://nordictrip-b0e0b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "nordictrip-b0e0b",
+  storageBucket: "nordictrip-b0e0b.firebasestorage.app",
+  messagingSenderId: "197427850300",
+  appId: "1:197427850300:web:fd5796342d05d0c7766739"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const members = ["Vic", "David", "Anni", "Anna", "Joyce", "Anna II"];
+
+// --- 2. 初始行程資料 (固定部分) ---
+const staticItinerary = [
+    { d: "第 01 天 | 01/29 (五)", 
+      t: "台北 準備出發", 
+      f: "全部的人於 21:00 桃園國際機場集合，搭乘Emirates飛往杜拜轉機。", 
+      tr: "", 
+      h: "機上休息" },
+    { d: "第 02 天 | 01/30 (六)", 
+      t: "台北 ✈️ 杜拜 ✈️ 赫爾辛基", 
+      f: "抵達後進行輕鬆的市區漫步。推薦：Oodi 圖書館（兒童閱讀區）、Esplanadi 公園散步買名牌，調整時差。", 
+      tr: "阿聯酋航空 EK367 台北 00:20 - 杜拜 06:15\n阿聯酋航空 EK167 杜拜 08:40 - 赫爾辛基 14:05", 
+      h: "Helsinki Airbnb" },
+     { d: "第 03 天 | 01/31 (日)", 
+      t: "赫爾辛基【市區觀光】", 
+      f: "參觀宏偉的主教座堂、富有俄羅斯風情的烏斯佩斯基大教堂，以及奇特的岩石教堂。", 
+      tr: "", 
+      h: "Helsinki Airbnb" },
+     { d: "第 04 天 | 02/01 (一)", 
+      t: "赫爾辛基 🚢 塔林 半日遊 (尚未訂票)", 
+      f: "搭乘渡輪前往愛沙尼亞首都。漫步於世界文化遺產——塔林舊城區，體驗中世紀童話氛圍。", 
+      tr: "去程 赫爾辛基 10:30 - 塔林     12:30\n返程 塔林     16:30 - 赫爾辛基 18:30", 
+      h: "Helsinki Airbnb" },
+   { d: "第 05 天 | 02/02 (二)", 
+      t: "赫爾辛基 🚂 (夜鋪火車) 往羅瓦涅米", 
+      f: "白天市區自由活動。晚間搭乘「極光特快車」夜鋪火車，讓小朋友體驗睡在火車上的樂趣！", 
+      tr: "VR 極地夜鋪火車 赫爾辛基 19:29 - 羅瓦涅米 7:20(+1)", 
+      h: "舒適夜鋪火車 (尚未訂票)" },
+     { d: "第 06 天 | 02/03 (三)", 
+      t: "羅瓦涅米【聖誕老人與極光】", 
+      f: "早晨7:20抵達北極圈內的羅瓦涅米。剛結束夜鋪火車旅程，第一天建議先在市區走走逛逛，安排輕量的活動以保留體力，讓大人小孩都能慢慢適應極地的氣候與環境。晚間留意極光預報。", 
+      tr: "", 
+      h: "Santa Claus Holiday Village" },
+      { d: "第 07 天 | 02/04 (四)", 
+      t: "羅瓦涅米【聖誕老人與極光】", 
+      f: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。", 
+      tr: "", 
+      h: "Santa Claus Holiday Village" },
+     { d: "第 08 天 | 02/05 (五)", 
+      t: "羅瓦涅米【聖誕老人與極光】", 
+      f: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。", 
+      tr: "", 
+      h: "Santa Claus Holiday Village" },
+     { d: "第 09 天 | 02/06 (六)", 
+      t: "羅瓦涅米【聖誕老人與極光】", 
+      f: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。", 
+      tr: "", 
+      h: "Santa Claus Holiday Village" },
+     { d: "第 10 天 | 02/07 (日)", 
+      t: "羅瓦涅米【聖誕老人與極光】", 
+      f: "跨越北極圈、拜訪聖誕老人、哈士奇與馴鹿雪橇體驗。晚間留意極光預報。", 
+      tr: "", 
+      h: "Santa Claus Holiday Village" },
+     { d: "第 11 天 | 02/08 (一)", 
+      t: "羅瓦涅米 ✈️ 哥本哈根", 
+      f: "飛往丹麥。尋找小美人魚、繽紛新港 (Nyhavn) 拍照。參觀圓塔與 Tivoli 樂園。", 
+      tr: "芬蘭航空 AY532 羅瓦涅米 09:10 -  赫爾辛基 10:25\n芬蘭航空 AY957 赫爾辛基 11:35 -  哥本哈根 12:15", 
+      h: "Copenhagen Airbnb" },
+     { d: "第 12 天 | 02/09 (二)", 
+      t: "哥本哈根【童話觀光】", 
+      f: "尋找小美人魚、繽紛新港 (Nyhavn) 拍照。參觀圓塔與 Tivoli 樂園。", 
+      tr: "", 
+      h: "Copenhagen Airbnb" },
+    { d: "第 13 天 | 02/10 (三)", 
+      t: "哥本哈根 🚢 (過夜郵輪) 往奧斯陸", 
+      f: "傍晚登上豪華郵輪 DFDS。船上享用大餐、欣賞海景，移動中享受舒適睡眠。", 
+      tr: "DFDS 豪華郵輪 哥本哈根 16:15 - 奧斯陸 10:00(+1)", 
+      h: "豪華郵輪 (尚未訂票)" },
+     { d: "第 14 天 | 02/11 (四)", 
+      t: "奧斯陸 ✈️ 斯德哥爾摩", 
+      f: "10:00抵達奧斯陸，市區漫步。隨後飛往斯德哥爾摩。", 
+      tr: "挪威航空 DY816 奧斯陸 15:00 - 斯德哥爾摩 16:00", 
+      h: "Stockholm Airbnb" },
+    { d: "第 15 天 | 02/12 (五)", 
+      t: "斯德哥爾摩【老城維京觀光】", 
+      f: "推薦 Vasa 沉船博物館、Skansen 戶外博物館。漫步老城區。", 
+      tr: "", 
+      h: "Stockholm Airbnb" },
+     { d: "第 16-17 天 | 02/13 (六) - 02/14 (日) ", 
+      t: "斯德哥爾摩 ✈️ 杜拜 ✈️ 台北", 
+      f: "回家了", 
+      tr: "", 
+      h: "台北" }
 ];
 
-/**
- * ==========================================
- * 💰 初始預算資料 (交通與住宿)
- * ==========================================
- */
-const initialTrans = [
-    { name: "國際機票 (Emirates)", adult: 42142, child: 33714, unit: "TWD" },
-    { name: "內陸航段 (2段)", adult: 11627, child: 9226, unit: "TWD" },
-    { name: "塔林船票", adult: 30, child: 30, unit: "EUR" },
-    { name: "極地火車", adult: 121.5, child: 121.5, unit: "EUR" },
-    { name: "DFDS 郵輪", adult: 100, child: 100, unit: "EUR" }
-];
+// --- 3. 雲端讀取 ---
+let cloudData = { eurRate: 35.5, features: {}, trans: [], stay: [], ledger: [] };
 
-const initialStay = [
-    { name: "Santa Claus Village", cost: 2495*3, unit: "EUR" }, 
-    { name: "Helsinki Airbnb", cost: 53656, unit: "TWD" },
-    { name: "Stockholm Airbnb", cost: 63085, unit: "TWD" },
-    { name: "Copenhagen Airbnb", cost: 45757, unit: "TWD" }
-];
+function loadFromCloud() {
+    db.ref("trip_v4").once("value").then((snapshot) => {
+        if (snapshot.exists()) cloudData = snapshot.val();
+        renderItinerary();
+        renderBudget();
+        renderLedger();
+        document.getElementById('status-msg').innerText = "✅ 雲端同步中";
+    });
+}
 
-/**
- * ==========================================
- * ⚙️ 核心處理邏輯
- * ==========================================
- */
-
+// --- 4. 渲染功能 ---
 function renderItinerary() {
     const list = document.getElementById('itinerary-list');
-    itineraryData.forEach(item => {
+    list.innerHTML = "";
+    staticItinerary.forEach((item, idx) => {
+        const feat = cloudData.features ? cloudData.features['day'+idx] : item.f;
         list.innerHTML += `
             <div class="card">
                 <div class="card-header" onclick="toggleCard(this)">
-                    <span>${item.day} ${item.title}</span>
-                    <span>▼</span>
+                    <span>${item.d} | ${item.t}</span><span>▼</span>
                 </div>
                 <div class="card-content">
-                    <div class="section-title">📜 行程特色</div>
-                    <p>${item.feature}</p>
-                    ${item.transport ? `<div class="section-title">✈️ 航班/交通</div><div class="info-box">${item.transport}</div>` : ''}
-                    ${item.hotel ? `<div class="section-title">🏨 住宿預定</div><p>${item.hotel}</p>` : ''}
+                    <div class="section-title">📜 行程特色 (可編輯)</div>
+                    <div class="editable-feature" contenteditable="true" id="feat-${idx}">${feat || item.f}</div>
+                    <div class="section-title">✈️ 交通銜接 (固定)</div>
+                    <div class="fixed-info">${item.tr}</div>
+                    <div class="section-title">🏨 住宿預定 (固定)</div>
+                    <div class="fixed-info">${item.h}</div>
                 </div>
             </div>`;
     });
 }
 
-function initBudget() {
-    initialTrans.forEach(i => addRow('trans-body', i.name, i.adult, i.child, i.unit));
-    initialStay.forEach(i => addRow('stay-body', i.name, i.cost, 0, i.unit));
-    calculate();
-}
-
-function addRow(target, name="", val1=0, val2=0, unit="TWD") {
-    const body = document.getElementById(target);
-    const row = document.createElement('tr');
-    if (target === 'trans-body') {
-        row.innerHTML = `
-            <td><input class="editable-input" value="${name}"></td>
-            <td><input type="number" class="editable-input t-adult" value="${val1}" oninput="calculate()"></td>
-            <td><input type="number" class="editable-input t-child" value="${val2}" oninput="calculate()"></td>
-            <td><select class="t-unit" onchange="calculate()"><option value="TWD" ${unit==='TWD'?'selected':''}>TWD</option><option value="EUR" ${unit==='EUR'?'selected':''}>EUR</option></select></td>
-            <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculate()">X</button></td>`;
-    } else {
-        row.innerHTML = `
-            <td><input class="editable-input" value="${name}"></td>
-            <td><input type="number" class="editable-input s-cost" value="${val1}" oninput="calculate()"></td>
-            <td><select class="s-unit" onchange="calculate()"><option value="TWD" ${unit==='TWD'?'selected':''}>TWD</option><option value="EUR" ${unit==='EUR'?'selected':''}>EUR</option></select></td>
-            <td class="s-twd">0</td>
-            <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculate()">X</button></td>`;
+function renderBudget() {
+    document.getElementById('eur-rate').value = cloudData.eurRate || 35.5;
+    const tBody = document.getElementById('trans-body');
+    tBody.innerHTML = "";
+    if (cloudData.trans) cloudData.trans.forEach(i => addTransRow(i.n, i.a, i.c, i.u));
+    else {
+        addTransRow("國際機票 (Emirates)", 42142, 33714, "TWD");
+        addTransRow("內陸航段 (2段)", 11627, 9226, "TWD");
     }
-    body.appendChild(row);
+
+    const sBody = document.getElementById('stay-body');
+    sBody.innerHTML = "";
+    if (cloudData.stay) cloudData.stay.forEach(i => addStayRow(i.n, i.v, i.u));
+    else {
+        addStayRow("Santa Claus Village", 7485, "EUR");
+        addStayRow("Helsinki Airbnb 合計", 1500, "TWD");
+        addStayRow("Copenhagen Airbnb 合計", 1500, "TWD");
+        addStayRow("Stockholm Airbnb 合計", 1500, "TWD");
+    }
+    calculateBudget();
 }
 
-function calculate() {
-    const rate = parseFloat(document.getElementById('eur-rate').value) || 0;
-    let sumA = 0, sumC = 0;
+function addTransRow(n="", a=0, c=0, u="TWD") {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input class="t-name" value="${n}"></td>
+        <td><input type="number" class="t-adult" value="${a}" oninput="calculateBudget()"></td>
+        <td><input type="number" class="t-child" value="${c}" oninput="calculateBudget()"></td>
+        <td><select class="t-unit" onchange="calculateBudget()"><option value="TWD" ${u==='TWD'?'selected':''}>TWD</option><option value="EUR" ${u==='EUR'?'selected':''}>EUR</option></select></td>
+        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculateBudget()">X</button></td>`;
+    document.getElementById('trans-body').appendChild(row);
+}
 
-    // 計算交通
+function addStayRow(n="", v=0, u="EUR") {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input class="s-name" value="${n}"></td>
+        <td><input type="number" class="s-cost" value="${v}" oninput="calculateBudget()"></td>
+        <td><select class="s-unit" onchange="calculateBudget()"><option value="EUR" ${u==='EUR'?'selected':''}>EUR</option><option value="TWD" ${u==='TWD'?'selected':''}>TWD</option></select></td>
+        <td class="s-twd">0</td>
+        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculateBudget()">X</button></td>`;
+    document.getElementById('stay-body').appendChild(row);
+}
+
+function calculateBudget() {
+    const rate = parseFloat(document.getElementById('eur-rate').value) || 0;
+    let totalA = 0, totalC = 0;
+
     document.querySelectorAll('#trans-body tr').forEach(row => {
         const a = parseFloat(row.querySelector('.t-adult').value) || 0;
         const c = parseFloat(row.querySelector('.t-child').value) || 0;
         const u = row.querySelector('.t-unit').value;
-        if (u === "EUR") { sumA += a * rate; sumC += c * rate; } else { sumA += a; sumC += c; }
+        totalA += (u === "EUR") ? a * rate : a;
+        totalC += (u === "EUR") ? c * rate : c;
     });
 
-    // 計算住宿 (全團 9 人平攤)
     document.querySelectorAll('#stay-body tr').forEach(row => {
-        const totalCost = parseFloat(row.querySelector('.s-cost').value) || 0;
+        const cost = parseFloat(row.querySelector('.s-cost').value) || 0;
         const u = row.querySelector('.s-unit').value;
-        const totalTwd = (u === "EUR") ? totalCost * rate : totalCost;
-        const perPerson = totalTwd / 9;
-        sumA += perPerson; sumC += perPerson;
-        row.querySelector('.s-twd').innerText = Math.round(perPerson).toLocaleString();
+        const twdPer = ((u === "EUR") ? cost * rate : cost) / 9;
+        totalA += twdPer; totalC += twdPer;
+        row.querySelector('.s-twd').innerText = Math.round(twdPer).toLocaleString();
     });
 
-    document.getElementById('total-adult').innerText = Math.round(sumA).toLocaleString();
-    document.getElementById('total-child').innerText = Math.round(sumC).toLocaleString();
+    document.getElementById('total-adult').innerText = "NT$ " + Math.round(totalA).toLocaleString();
+    document.getElementById('total-child').innerText = "NT$ " + Math.round(totalC).toLocaleString();
+}
+
+function renderLedger() {
+    const lBody = document.getElementById('ledger-body');
+    lBody.innerHTML = "";
+    if (cloudData.ledger) cloudData.ledger.forEach(i => addLedgerRow(i.item, i.amount, i.payer, i.participants));
+    calculateLedger();
+}
+
+function addLedgerRow(item="", amount=0, payer="Vic", participants=members) {
+    const row = document.createElement('tr');
+    let checks = members.map(m => `<label style="margin-right:5px; display:inline-block;"><input type="checkbox" class="p-check" value="${m}" ${participants.includes(m)?'checked':''}>${m}</label>`).join("");
+    row.innerHTML = `
+        <td><input class="l-item" value="${item}"></td>
+        <td><input type="number" class="l-amt" value="${amount}" oninput="calculateLedger()"></td>
+        <td><select class="l-payer" onchange="calculateLedger()">${members.map(m => `<option value="${m}" ${payer===m?'selected':''}>${m}</option>`).join("")}</select></td>
+        <td><div onchange="calculateLedger()">${checks}</div></td>
+        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove();calculateLedger()">X</button></td>`;
+    lBody = document.getElementById('ledger-body').appendChild(row);
+}
+
+function calculateLedger() {
+    let bal = {}; members.forEach(m => bal[m] = 0);
+    document.querySelectorAll('#ledger-body tr').forEach(row => {
+        const amt = parseFloat(row.querySelector('.l-amt').value) || 0;
+        const payer = row.querySelector('.l-payer').value;
+        const participants = Array.from(row.querySelectorAll('.p-check:checked')).map(cb => cb.value);
+        if (amt > 0 && participants.length > 0) {
+            bal[payer] += amt;
+            participants.forEach(p => bal[p] -= amt / participants.length);
+        }
+    });
+    document.getElementById('balance-summary').innerHTML = members.map(m => {
+        const b = Math.round(bal[m]);
+        return `<div class="balance-card"><b>${m}</b><br><span style="color:${b>=0?'#27ae60':'#e74c3c'}">${b>=0?'+':''}${b}</span></div>`;
+    }).join("");
+}
+
+// --- 5. 雲端儲存 ---
+function saveToCloud() {
+    const pwd = prompt("輸入管理密碼：");
+    if (pwd !== "2027") return;
+
+    const data = {
+        eurRate: parseFloat(document.getElementById('eur-rate').value),
+        features: {},
+        trans: Array.from(document.querySelectorAll('#trans-body tr')).map(r => ({
+            n: r.querySelector('.t-name').value, a: parseFloat(r.querySelector('.t-adult').value),
+            c: parseFloat(r.querySelector('.t-child').value), u: r.querySelector('.t-unit').value
+        })),
+        stay: Array.from(document.querySelectorAll('#stay-body tr')).map(r => ({
+            n: r.querySelector('.s-name').value, v: parseFloat(r.querySelector('.s-cost').value), u: r.querySelector('.s-unit').value
+        })),
+        ledger: Array.from(document.querySelectorAll('#ledger-body tr')).map(r => ({
+            item: r.querySelector('.l-item').value, amount: parseFloat(r.querySelector('.l-amt').value),
+            payer: r.querySelector('.l-payer').value, participants: Array.from(r.querySelectorAll('.p-check:checked')).map(cb => cb.value)
+        }))
+    };
+    staticItinerary.forEach((_, i) => { data.features['day'+i] = document.getElementById('feat-'+i).innerText; });
+
+    db.ref("trip_v4").set(data).then(() => alert("✅ 儲存成功！"));
 }
 
 function showTab(id) {
@@ -333,14 +387,7 @@ function toggleCard(el) {
     content.style.display = (content.style.display === 'block') ? 'none' : 'block';
 }
 
-renderItinerary();
-initBudget();
+loadFromCloud();
 </script>
 </body>
 </html>
-
-
-
-
-
-
