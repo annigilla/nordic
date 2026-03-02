@@ -330,7 +330,9 @@ function calculateAll() {
 }
 
 function saveToCloud() {
-    const pwd = prompt("密碼："); if (pwd !== "2027") return;
+    // 移除密碼，改用簡單的確認視窗，防止誤觸
+    if (!confirm("確定要將目前的修改儲存到雲端嗎？")) return;
+
     const data = {
         eurRate: parseFloat(document.getElementById('eur-rate').value),
         features: {},
@@ -362,4 +364,5 @@ loadFromCloud();
 </script>
 </body>
 </html>
+
 
