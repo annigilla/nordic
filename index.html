@@ -234,11 +234,11 @@ function renderItinerary() {
                     <span>${item.d} | ${item.t}</span><span>▼</span>
                 </div>
                 <div class="card-content">
-                    <div class="section-title">📜 行程特色 (可編輯)</div>
+                    <div class="section-title">📜 行程特色 </div>
                     <div class="editable-feature" contenteditable="true" id="feat-${idx}">${feat || item.f}</div>
-                    <div class="section-title">✈️ 交通銜接 (固定)</div>
+                    <div class="section-title">✈️ 交通銜接 </div>
                     <div class="fixed-info">${item.tr}</div>
-                    <div class="section-title">🏨 住宿預定 (固定)</div>
+                    <div class="section-title">🏨 住宿預定 </div>
                     <div class="fixed-info">${item.h}</div>
                 </div>
             </div>`;
@@ -391,4 +391,5 @@ loadFromCloud();
 </script>
 </body>
 </html>
+
 
